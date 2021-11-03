@@ -26,7 +26,7 @@ discourse:
     publisher: "monk.io"
     icon: https://assets.monk.io/icons/1200px-Discourse_icon.svg.png
     email: maciej@monk.io
-  version: 2-debian-10 
+  version: 2.6.2-debian-10-r9
   containers:
     defines: containers
     discourse:
@@ -51,7 +51,7 @@ discourse:
     defines: variables
     image-tag:
       type: string
-      value: 2-debian-10  
+      value: 2.6.2-debian-10-r9
     rpc-port:
       type: int
       value: 3000
