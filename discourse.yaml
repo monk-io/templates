@@ -17,16 +17,7 @@ redis:
 
 discourse:
   defines: runnable
-  metadata:
-    defines: metadata
-    name: Discourse
-    description: A platform for community discussion. Free, open, simple. 
-    website: https://www.discourse.org
-    source: https://github.com/discourse/discourse
-    publisher: "monk.io"
-    icon: https://assets.monk.io/icons/1200px-Discourse_icon.svg.png
-    email: maciej@monk.io
-  version: 2.6.2-debian-10-r9
+  version: 2
   containers:
     defines: containers
     discourse:
@@ -35,23 +26,26 @@ discourse:
       ports:
         - <- `0.0.0.0:${rpc-port}:3000`
       environment:
-        - <- `POSTGRESQL_CLIENT_CREATE_DATABASE_NAME=${postgres_name}`
+        - ALLOW_EMPTY_PASSWORD=yes # TODO: change postgres to postgres with password
         - <- `POSTGRESQL_CLIENT_CREATE_DATABASE_USERNAME=${postgres_user}`
-        - <- `POSTGRESQL_ROOT_USER=${postgres_root}`
         - <- `POSTGRESQL_CLIENT_CREATE_DATABASE_PASSWORD=${postgres_pass}`
-        - <- `DISCOURSE_POSTGRESQL_NAME=${postgres_name}`
-        - <- `DISCOURSE_POSTGRESQL_USERNAME=${postgres_user}`
-        - <- `DISCOURSE_POSTGRESQL_PASSWORD=${postgres_pass}`
-        - <- `POSTGRESQL_HOST=${postgres_host}`
+        - <- `POSTGRESQL_CLIENT_CREATE_DATABASE_NAME=${postgres_name}`
+        - <- `POSTGRESQL_CLIENT_DATABASE_HOST=${postgres_host}`
+        - POSTGRESQL_CLIENT_CREATE_DATABASE_EXTENSIONS=hstore,pg_trgm
+        - <- `POSTGRESQL_ROOT_USER=${postgres_root}`
+        - <- `DISCOURSE_DATABASE_NAME=${postgres_name}`
+        - <- `DISCOURSE_DATABASE_HOST=${postgres_host}`
+        - <- `DISCOURSE_DATABASE_USER=${postgres_user}`
+        - <- `DISCOURSE_DATABASE_PASSWORD=${postgres_pass}`
         - <- `DISCOURSE_HOSTNAME=${discourse_url}`
-        - <- `REDIS_HOST=${redis_host}`
+        - <- `DISCOURSE_REDIS_HOST=${redis_host}`
       paths:
         - <- `${volume}:${internal-volume}`
   variables:
     defines: variables
     image-tag:
       type: string
-      value: 2.6.2-debian-10-r9
+      value: 2
     rpc-port:
       type: int
       value: 3000
@@ -69,13 +63,13 @@ discourse:
       value: "bitnami_application"
     postgres_user:
       type: string
-      value: "bn_discourse" 
+      value: "bn_discourse"
     postgres_pass:
       type: string
       value: "bitnami1"
     postgres_host:
       type: string
-      value: <- get-hostname("discourse/postgres", "postgres") 
+      value: <- get-hostname("discourse/postgres", "postgres")
     redis_host:
       type: string
       value: <- get-hostname("discourse/redis", "redis")
@@ -95,20 +89,27 @@ sidekiq:
   inherits: ./discourse
   containers:
     discourse:
-      entrypoint: <- `nami start --foreground discourse-sidekiq`
+      cmd: <- `/opt/bitnami/scripts/discourse-sidekiq/run.sh`
       environment:
         - <- `DISCOURSE_POSTGRESQL_NAME=${postgres_name}`
         - <- `DISCOURSE_POSTGRESQL_USERNAME=${postgres_user}`
         - <- `DISCOURSE_POSTGRESQL_PASSWORD=${postgres_pass}`
         - <- `POSTGRESQL_HOST=${postgres_host}`
         - <- `DISCOURSE_PORT=${rpc-port}`
+        - <- `POSTGRESQL_CLIENT_POSTGRES_PASSWORD=${postgres_pass}`
         - <- `DISCOURSE_HOSTNAME=${discourse_url}`
+        - <- `DISCOURSE_HOST=${discourse_host}`
   depends:
     defines: depends
     wait-for:
       runnables:
         - /discourse/discourse
       timeout: 60
+  variables:
+    defines: variables
+    discourse_host:
+      type: string
+      value: <- get-hostname("discourse/discourse", "discourse")
 
 nginx:
   defines: runnable
@@ -155,7 +156,7 @@ stack:
 
 stack-ssl:
   defines: process-group
-  runnable-list:    
+  runnable-list:
     - /discourse/postgres
     - /discourse/redis
     - /discourse/discourse
