@@ -35,7 +35,7 @@ latest:
         value:
           type: string
           description: Value itself
-      code: exec("vault", "/bin/sh", "-c", `VAULT_TOKEN=${root-token} vault kv put -address=http://127.0.0.1:8200 ${args["path"]} ${args["key"]}='${args["value"]}'`)
+      code: exec("vault", "/bin/sh", "-c", `VAULT_TOKEN=${root-token} VAULT_CLI_NO_COLOR=true vault kv put -address=http://127.0.0.1:8200 ${args["path"]} ${args["key"]}='${args["value"]}'`)
     get:
       description: Get value
       arguments:
@@ -45,7 +45,7 @@ latest:
         key:
           type: string
           description: Value key
-      code: exec("vault", "/bin/sh", "-c", `VAULT_TOKEN=${root-token} vault kv get -address=http://127.0.0.1:8200 -field=${args["key"]} ${args["path"]}`) trim
+      code: exec("vault", "/bin/sh", "-c", `VAULT_TOKEN=${root-token} VAULT_CLI_NO_COLOR=true vault kv get -address=http://127.0.0.1:8200 -field=${args["key"]} ${args["path"]}`) trim
   variables:
     defines: variables
     volume-data:
