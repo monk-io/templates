@@ -53,3 +53,4 @@ LOAD eventeum.yaml
 LOAD ghost.yaml
 LOAD meltano.yaml
 LOAD papercups.yaml
+LOAD couchdb.yaml
