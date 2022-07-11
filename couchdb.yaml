@@ -1,0 +1,26 @@
+namespace: couchdb
+
+latest:
+    defines: runnable
+    containers:
+        couchdb:
+            image: couchdb
+            image-tag: latest
+            ports:
+                - <- `0.0.0.0:${db-port}:5984`
+            environment:
+                - <- `COUCHDB_PASSWORD=${db-password}`
+                - <- `COUCHDB_USER=${db-user}`
+    variables:
+        db-port:
+            type: int
+            value: 5984
+        image-tag:
+            type: string
+            value: latest
+        db-password:
+            type: string
+            value: password
+        db-user:
+            type: string
+            value: user
